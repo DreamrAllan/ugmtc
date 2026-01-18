@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  password         String
+  name             String
+  teamName         String
+  phone            String?
+  role             String    @default("user") // "user" or "admin"
+  emailVerified    Boolean   @default(false)
+  emailVerifyToken String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  athletes        Athlete[]
+  entries         Entry[]
+  reviewedEntries Entry[]         @relation("ReviewedBy")
+  passwordResets  PasswordReset[]
+  teamProfile     TeamProfile?
+
+  @@map("users")
+}
+
+model TeamProfile {
+  id          String   @id @default(cuid())
+  teamName    String
+  logoUrl     String?  // Path to uploaded logo
+  isComplete  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coaches     Coach[]
+  
+  @@map("team_profiles")
+}
+
+model Coach {
+  id            String   @id @default(cuid())
+  name          String
+  phone         String?
+  role          String   @default("head") // "head" or "assistant"
+  createdAt     DateTime @default(now())
+  
+  // Relations
+  teamProfileId String
+  teamProfile   TeamProfile @relation(fields: [teamProfileId], references: [id], onDelete: Cascade)
+  
+  @@map("coaches")
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_resets")
+}
+
+model Athlete {
+  id              String   @id @default(cuid())
+  fullName        String
+  birthPlace      String
+  birthDate       DateTime
+  gender          String   // "male" or "female"
+  weight          Float
+  height          Float
+  beltRank        String?  // Belt rank (e.g., 'geup-10', 'dan-1')
+  photo           String?  // Photo 3x4 URL
+  idDocument      String?  // KTP/Akte URL  
+  beltCertificate String?  // Sertifikat sabuk URL
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  userId  String
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries Entry[]
+
+  @@map("athletes")
+}
+
+model Entry {
+  id         String    @id @default(cuid())
+  teamName   String
+  category   String    // e.g., "Poomsae", "Kyorugi"
+  eventType  String    // e.g., "Individual", "Team"
+  ageClass   String    // e.g., "Cadet", "Junior", "Senior"
+  weightClass String?  // For Kyorugi
+  status     String    @default("pending") // "pending", "approved", "rejected"
+  notes      String?
+  createdAt  DateTime  @default(now())
+  reviewedAt DateTime?
+  updatedAt  DateTime  @updatedAt
+
+  // Relations
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  athleteId    String
+  athlete      Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  reviewedById String?
+  reviewedBy   User?    @relation("ReviewedBy", fields: [reviewedById], references: [id])
+
+  @@map("entries")
+}

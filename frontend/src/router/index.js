@@ -71,6 +71,11 @@ const routes = [
                 component: () => import('../views/dashboard/DashboardEntries.vue')
             },
             {
+                path: 'import-athletes',
+                name: 'ImportAthletes',
+                component: () => import('../views/dashboard/ImportAthletesPage.vue')
+            },
+            {
                 path: 'settings',
                 name: 'DashboardSettings',
                 component: () => import('../views/dashboard/DashboardSettings.vue')

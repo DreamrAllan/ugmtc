@@ -1,4 +1,4 @@
-<script setup>
+ <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { RouterLink } from 'vue-router'
 

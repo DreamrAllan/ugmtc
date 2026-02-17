@@ -84,7 +84,11 @@ model Athlete {
   beltRank        String?  // Belt rank (e.g., 'geup-10', 'dan-1')
   photo           String?  // Photo 3x4 URL
   idDocument      String?  // KTP/Akte URL  
-  beltCertificate String?  // Sertifikat sabuk URL
+  beltCertificate   String?  // Sertifikat sabuk URL
+  healthCertificate String?  // Surat sehat URL
+  status          String   @default("draft") // "draft", "pending", "approved", "rejected"
+  adminNote       String?  // Admin rejection/approval notes
+  reviewedAt      DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -102,7 +106,8 @@ model Entry {
   category   String    // e.g., "Poomsae", "Kyorugi"
   eventType  String    // e.g., "Individual", "Team"
   ageClass   String    // e.g., "Cadet", "Junior", "Senior"
-  weightClass String?  // For Kyorugi
+  weightClass String?  // For Kyorugi weight class or Poomsae type (individu/pair/beregu)
+  poomsaeGroup String?  // Group name for pair/beregu entries (same value = same team)
   status     String    @default("pending") // "pending", "approved", "rejected"
   notes      String?
   createdAt  DateTime  @default(now())

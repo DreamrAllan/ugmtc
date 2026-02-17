@@ -107,6 +107,7 @@ export const athletesApi = {
         // Add files
         if (files.photo) formData.append('photo', files.photo)
         if (files.idDocument) formData.append('idDocument', files.idDocument)
+        if (files.healthCertificate) formData.append('healthCertificate', files.healthCertificate)
         if (files.beltCertificate) formData.append('beltCertificate', files.beltCertificate)
 
         const response = await fetch(`${API_BASE_URL}/athletes`, {
@@ -136,7 +137,84 @@ export const athletesApi = {
     bulkCreate: (athletes) => apiRequest('/athletes/bulk', {
         method: 'POST',
         body: JSON.stringify({ athletes })
-    })
+    }),
+
+    downloadTemplate: async () => {
+        const token = getToken()
+        const response = await fetch(`${API_BASE_URL}/athletes/template`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        if (!response.ok) throw new Error('Failed to download template')
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'Template_Data_Atlet_UGMTC.xlsx'
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+    },
+
+    importExcel: async (file) => {
+        const token = getToken()
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const response = await fetch(`${API_BASE_URL}/athletes/import-excel`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        })
+
+        const data = await response.json()
+        if (!response.ok) {
+            const err = new Error(data.error || 'Failed to import')
+            err.errors = data.errors
+            throw err
+        }
+        return data
+    },
+
+    uploadDocuments: async (athleteId, files) => {
+        const token = getToken()
+        const formData = new FormData()
+
+        if (files.photo) formData.append('photo', files.photo)
+        if (files.idDocument) formData.append('idDocument', files.idDocument)
+        if (files.beltCertificate) formData.append('beltCertificate', files.beltCertificate)
+        if (files.healthCertificate) formData.append('healthCertificate', files.healthCertificate)
+
+        const response = await fetch(`${API_BASE_URL}/athletes/${athleteId}/documents`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        })
+
+        const data = await response.json()
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to upload documents')
+        }
+        return data
+    },
+
+    submitDrafts: () => apiRequest('/athletes/submit-drafts', {
+        method: 'POST'
+    }),
+
+    updateAthlete: async (athleteId, formData) => {
+        const token = getToken()
+        const response = await fetch(`${API_BASE_URL}/athletes/${athleteId}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        })
+        const data = await response.json()
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to update athlete')
+        }
+        return data
+    }
 }
 
 // Entries API

@@ -10,6 +10,10 @@ export const useAthleteStore = defineStore('athlete', () => {
 
     // Computed
     const totalAthletes = computed(() => athletes.value.length)
+    const draftAthletes = computed(() => athletes.value.filter(a => a.status === 'draft'))
+    const pendingAthletes = computed(() => athletes.value.filter(a => a.status === 'pending'))
+    const rejectedAthletes = computed(() => athletes.value.filter(a => a.status === 'rejected'))
+    const approvedAthletes = computed(() => athletes.value.filter(a => a.status === 'approved'))
 
     // Load athletes from API
     const loadAthletes = async () => {
@@ -44,13 +48,13 @@ export const useAthleteStore = defineStore('athlete', () => {
         }
     }
 
-    // Update athlete
-    const updateAthlete = async (athleteId, updates) => {
+    // Update athlete with FormData (supports file uploads)
+    const updateAthlete = async (athleteId, formData) => {
         isLoading.value = true
         error.value = null
 
         try {
-            const response = await athletesApi.update(athleteId, updates)
+            const response = await athletesApi.updateAthlete(athleteId, formData)
             const index = athletes.value.findIndex(a => a.id === athleteId)
             if (index !== -1) {
                 athletes.value[index] = response.athlete
@@ -99,9 +103,65 @@ export const useAthleteStore = defineStore('athlete', () => {
         }
     }
 
+    // Import from Excel
+    const importFromExcel = async (file) => {
+        isLoading.value = true
+        error.value = null
+
+        try {
+            const response = await athletesApi.importExcel(file)
+            // Reload to get all athletes with proper IDs
+            await loadAthletes()
+            return response
+        } catch (e) {
+            error.value = e.message
+            throw e
+        } finally {
+            isLoading.value = false
+        }
+    }
+
+    // Upload documents for a specific athlete
+    const uploadAthleteDocuments = async (athleteId, files) => {
+        isLoading.value = true
+        error.value = null
+
+        try {
+            const response = await athletesApi.uploadDocuments(athleteId, files)
+            // Update the athlete in the local list
+            const index = athletes.value.findIndex(a => a.id === athleteId)
+            if (index !== -1) {
+                athletes.value[index] = response.athlete
+            }
+            return response.athlete
+        } catch (e) {
+            error.value = e.message
+            throw e
+        } finally {
+            isLoading.value = false
+        }
+    }
+
     // Get athlete by ID
     const getAthleteById = (id) => {
         return athletes.value.find(a => a.id === id)
+    }
+
+    // Submit drafts to admin
+    const submitAthleteDrafts = async () => {
+        isLoading.value = true
+        error.value = null
+
+        try {
+            const response = await athletesApi.submitDrafts()
+            await loadAthletes()
+            return response
+        } catch (e) {
+            error.value = e.message
+            throw e
+        } finally {
+            isLoading.value = false
+        }
     }
 
     return {
@@ -109,11 +169,18 @@ export const useAthleteStore = defineStore('athlete', () => {
         isLoading,
         error,
         totalAthletes,
+        draftAthletes,
+        pendingAthletes,
+        rejectedAthletes,
+        approvedAthletes,
         loadAthletes,
         addAthlete,
         updateAthlete,
         removeAthlete,
         addBulkAthletes,
-        getAthleteById
+        importFromExcel,
+        uploadAthleteDocuments,
+        getAthleteById,
+        submitAthleteDrafts
     }
 })

@@ -26,6 +26,13 @@ export const getAgeCategory = (birthDate, eventMode = 'prestasi') => {
         if (age >= 12 && age <= 14) return 'cadet'
         if (age >= 15 && age <= 17) return 'junior'
         if (age >= 18) return 'senior'
+    } else if (eventMode === 'pemula') {
+        // Pemula categories
+        if (age >= 7 && age <= 8) return 'pra-cadet-a'
+        if (age >= 9 && age <= 11) return 'pra-cadet-b'
+        if (age >= 12 && age <= 14) return 'cadet'
+        if (age >= 15 && age <= 17) return 'junior'
+        if (age >= 18) return 'senior'
     } else {
         // Festival categories
         if (age >= 7 && age <= 8) return 'pra-cadet-a'
@@ -94,6 +101,7 @@ export const festivalWeightClasses = {
 
 // Get weight classes based on category, gender, and mode
 export const getWeightClasses = (category, gender, eventMode = 'prestasi') => {
+    // Pemula uses festival weight classes
     const classes = eventMode === 'prestasi' ? prestasiWeightClasses : festivalWeightClasses
     const genderKey = gender === 'male' ? 'male' : 'female'
 
@@ -106,6 +114,7 @@ export const getWeightClasses = (category, gender, eventMode = 'prestasi') => {
 // Event modes
 export const eventModes = [
     { id: 'prestasi', name: 'Prestasi' },
+    { id: 'pemula', name: 'Pemula' },
     { id: 'festival', name: 'Festival' }
 ]
 
@@ -113,6 +122,13 @@ export const eventModes = [
 export const eventTypes = [
     { id: 'kyorugi', name: 'Kyorugi' },
     { id: 'poomsae', name: 'Poomsae' }
+]
+
+// Poomsae class types
+export const poomsaeTypes = [
+    { id: 'individu', name: 'Individu' },
+    { id: 'pair', name: 'Pair' },
+    { id: 'beregu', name: 'Beregu' }
 ]
 
 // Belt ranks (Geup and Dan)
